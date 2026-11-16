@@ -1,0 +1,24 @@
+name: Trem de Medir - testes DSP
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cpp17-dsp:
+    name: Testes do nucleo C++17
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configurar testes sem JUCE
+        run: cmake -S . -B build-dsp -DTREM_DSP_TEST_ONLY=ON -DCMAKE_BUILD_TYPE=Release
+      - name: Compilar
+        run: cmake --build build-dsp --parallel 2
+      - name: Testar
+        run: ctest --test-dir build-dsp --output-on-failure

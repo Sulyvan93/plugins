@@ -1,60 +1,71 @@
-name: Compilar Trem de Medir para Mac M4
+name: Trem de Medir - macOS Apple Silicon
 
 on:
-  workflow_dispatch:
   push:
-    branches: [main, master]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  macos:
-    name: Criar plugins AU e VST3
+  macos-arm64:
+    name: Compilar AU, VST3 e aplicativo ARM64
     runs-on: macos-15-intel
-    timeout-minutes: 60
+    timeout-minutes: 75
     steps:
-      - name: Baixar o projeto
-        uses: actions/checkout@v4
-
-      - name: Mostrar ferramentas
+      - uses: actions/checkout@v4
+      - name: Identificar ambiente de build
         run: |
           xcodebuild -version
           cmake --version
-
-      - name: Testar o motor de audio
+      - name: Testar motor DSP em C++17
         run: |
           cmake -S . -B build-dsp -DTREM_DSP_TEST_ONLY=ON -DCMAKE_BUILD_TYPE=Release
           cmake --build build-dsp --parallel 3
           ctest --test-dir build-dsp --output-on-failure
-
-      - name: Preparar compilacao JUCE para Apple Silicon
+      - name: Configurar JUCE e toolchain ARM64
         run: |
           cmake -S . -B build -G Xcode \
             -DCMAKE_OSX_ARCHITECTURES=arm64 \
             -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO
-
-      - name: Compilar plugins e aplicativo
+      - name: Compilar formatos AU, VST3 e Standalone
         run: cmake --build build --config Release --parallel 3
-
-      - name: Empacotar arquivos para instalar
+      - name: Validar arquitetura dos binarios
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p entrega
+          for ext in component vst3 app; do
+            bundle="$(find build/TremDeMedir_artefacts -type d -name "*.$ext" -print -quit)"
+            if [[ "$ext" == "app" && -z "$bundle" ]]; then continue; fi
+            test -n "$bundle"
+            binary="$(find "$bundle/Contents/MacOS" -maxdepth 1 -type f -print -quit)"
+            test -n "$binary"
+            file "$binary"
+            lipo -archs "$binary" | grep -qw arm64
+          done
+      - name: Preparar pacotes para Mac mini M4
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p entrega staging
           au="$(find build/TremDeMedir_artefacts -type d -name '*.component' -print -quit)"
           vst3="$(find build/TremDeMedir_artefacts -type d -name '*.vst3' -print -quit)"
+          test -n "$au" && test -n "$vst3"
+          ditto "$au" staging/TremDeMedir.component
+          ditto -c -k --sequesterRsrc --keepParent staging/TremDeMedir.component entrega/TremDeMedir-AU-arm64.zip
+          ditto "$vst3" staging/TremDeMedir.vst3
+          ditto -c -k --sequesterRsrc --keepParent staging/TremDeMedir.vst3 entrega/TremDeMedir-VST3-arm64.zip
           app="$(find build/TremDeMedir_artefacts -type d -name '*.app' -print -quit)"
-          test -n "$au" && test -d "$au"
-          test -n "$vst3" && test -d "$vst3"
-          ditto -c -k --sequesterRsrc --keepParent "$au" entrega/Trem-de-Medir-AU-macOS-M4.zip
-          ditto -c -k --sequesterRsrc --keepParent "$vst3" entrega/Trem-de-Medir-VST3-macOS-M4.zip
           if [[ -n "$app" && -d "$app" ]]; then
-            ditto -c -k --sequesterRsrc --keepParent "$app" entrega/Trem-de-Medir-App-macOS-M4.zip
+            ditto "$app" staging/TremDeMedir.app
+            ditto -c -k --sequesterRsrc --keepParent staging/TremDeMedir.app entrega/TremDeMedir-App-arm64.zip
           fi
           ls -lh entrega
-
-      - name: Disponibilizar plugins para baixar
+      - name: Publicar artefatos instalaveis
         uses: actions/upload-artifact@v4
         with:
-          name: Trem-de-Medir-macOS-M4
+          name: TremDeMedir-macOS-arm64
           path: entrega/*.zip
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30

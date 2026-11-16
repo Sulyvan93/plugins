@@ -71,7 +71,8 @@ void TremDeMedirProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::
     const int gateIndex=(int)state.getRawParameterValue("gate")->load();
     engine.setGate(gateIndex==0?0:gateIndex==1?8:10);
     const int lfeIndex=(int)state.getRawParameterValue("lfe")->load();
-    engine.setSurroundWeights(channels<4?-1:lfeIndex==0?3:lfeIndex==1?5:-1);
+    const bool hasLfe = channels==6 || channels==8 || channels==10 || channels==12;
+    engine.setSurroundWeights(!hasLfe ? -1 : lfeIndex==0 ? 3 : lfeIndex==1 ? 5 : -1);
     const int historyMode=(int)state.getRawParameterValue("history")->load();
     bool playing=true;
     if(historyMode!=0) {

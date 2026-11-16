@@ -103,13 +103,25 @@ void MeterEngine::prepare(double sr, int numberOfChannels, bool highQuality) {
         highPass[c].highPass(samplerate,38.13547087602444,0.5003270373238773);
         interpolators[c].prepare(highQuality);
     }
-    setSurroundWeights(nChannels>3 ? 3 : -1);
+    // Default ITU-style LFE presence: 5.1, 7.1, 7.1.2 and 7.1.4 only.
+    // Quad, 5.0 and 7.0 must not discard a surround channel as an LFE.
+    setSurroundWeights(nChannels==6 || nChannels==8 || nChannels==10 || nChannels==12 ? 3 : -1);
     reset();
 }
 void MeterEngine::setSurroundWeights(int lfeIndex, float rearWeight) noexcept {
+    // Explicit channel order support for common ITU and Logic layouts.
+    // This is not a formal multichannel BS.1770 conformance claim.
     for(int c=0;c<maxChannels;++c) {
-        weight[c]=(c>=4 && nChannels>=4) ? rearWeight : 1.0;
-        if(c==lfeIndex) weight[c]=0;
+        bool surround=false;
+        if(nChannels==4) surround=(c==2 || c==3);             // Quad L R Ls Rs
+        else if(nChannels==5 || nChannels==7)
+            surround=(c>=3);                                  // ITU, no LFE
+        else if(lfeIndex==5 && nChannels>=6)
+            surround=(c==2 || c==3 || c>=6);                   // Logic L R Ls Rs C LFE...
+        else if(nChannels>=6)
+            surround=(c>=4);                                  // ITU L R C LFE ...
+        weight[c]=surround ? static_cast<double>(rearWeight) : 1.0;
+        if(c==lfeIndex) weight[c]=0.0;
     }
 }
 void MeterEngine::resetLoudness() noexcept {

@@ -1,26 +1,18 @@
-# Trem de Medir — Compilar na nuvem (sem instalar ferramentas de programação)
+# Compilação na nuvem — Trem de Medir
 
-Este projeto já inclui o arquivo `.github/workflows/compilar-mac.yml` para o GitHub Actions tentar compilar as versões AU (Logic Pro), VST3 (Mixbus) e um aplicativo autônomo para Mac mini M4.
+O repositório já está conectado: https://github.com/Sulyvan93/plugins
 
-## Passo a passo
+Não é necessário copiar código, carregar ZIP nem criar outro repositório.
 
-1. Crie uma conta em https://github.com se ainda não tiver.
-2. Entre em https://github.com/new e crie um repositório chamado `TremDeMedir` (escolha **Private**, de preferência). Clique em **Create repository**.
-3. Baixe o ZIP `Trem_de_Medir_GitHub_Actions.zip` e descompacte. Abra a pasta **TremDeMedir**.
-4. Na página do repositório novo, escolha **uploading an existing file** ou **Add file > Upload files**. Envie **os arquivos e pastas que estão dentro de TremDeMedir**, não o ZIP original. É essencial que as pastas `Source`, `tests` e `.github` sejam enviadas preservando seus caminhos. Em macOS, `Command + Shift + .` exibe a pasta oculta `.github` no Finder.
-5. Clique em **Commit changes**. Se a interface deixar algum arquivo para trás, confira que você tem `CMakeLists.txt`, `Source/PluginProcessor.cpp` e `.github/workflows/compilar-mac.yml` na página principal do repositório.
-6. Clique na guia **Actions**. A compilação deverá iniciar automaticamente após o upload (na branch main). Se não iniciar, abra o fluxo **Compilar Trem de Medir para Mac M4**, clique em **Run workflow** e confirme.
-7. Abra a execução mais recente. **Verde** = etapas concluídas; **vermelho** = houve um erro de compilação a corrigir. Se der vermelho, envie o texto do erro para correção.
-8. Se deu verde, no fim da página da execução procure **Artifacts** > **Trem-de-Medir-macOS-M4**. Baixe e descompacte. Você verá ZIPs separados com os plugins AU, VST3 e possivelmente o aplicativo.
+1. Acesse [Actions](https://github.com/Sulyvan93/plugins/actions).
+2. Selecione **Trem de Medir - macOS Apple Silicon**.
+3. Abra a execução mais recente. Um indicador verde significa que a compilação e a verificação da arquitetura foram bem-sucedidas. Um indicador vermelho exige correção dos logs.
+4. Na execução verde, baixe o artefato **TremDeMedir-macOS-arm64**, contendo os ZIPs AU, VST3 e, se produzido, aplicativo independente.
+5. Descompacte os ZIPs e copie os pacotes para:
+   - AU: `~/Library/Audio/Plug-Ins/Components/`
+   - VST3: `~/Library/Audio/Plug-Ins/VST3/`
+6. Reinicie o Logic Pro e o Harrison Mixbus e procure **Trem de Medir**.
 
-## Instalar no Mac mini M4
-
-Descompacte `Trem-de-Medir-AU-macOS-M4.zip` e coloque o arquivo `.component` em:
-`~/Library/Audio/Plug-Ins/Components/`
-
-Descompacte `Trem-de-Medir-VST3-macOS-M4.zip` e coloque o arquivo `.vst3` em:
-`~/Library/Audio/Plug-Ins/VST3/`
-
-No Finder, pressione `Command + Shift + G` para ir até uma das pastas acima. Feche e abra novamente Logic Pro e Mixbus para que detectem o plugin.
-
-**Atenção:** Trata-se de compilação experimental não assinada e ainda não validada num Mac real. O macOS pode mostrar avisos de segurança. Também podem surgir erros de compilação na primeira execução, pois o código da interface ainda não foi testado com JUCE/macOS. Não contorne avisos de segurança se não confiar na origem dos arquivos.
+O workflow `testes-dsp.yml` valida o motor de medição separadamente no Linux.
+Os plugins ainda necessitam testes de carregamento, áudio e medição dentro das DAWs.
+O workflow cria binários ARM64 sem assinatura/notarização Apple.
