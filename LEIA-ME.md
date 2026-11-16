@@ -16,19 +16,26 @@ Os testes DSP em Linux acontecem em `.github/workflows/testes-dsp.yml`.
 
 **Não certificado:** ITU-R BS.1770, EBU R128, true peak e multicanal exigem testes de conformidade com sinais oficiais e validação dos canais no host. Não há algoritmo proprietário Dolby nem controle SSL 360/UF1.
 
-## Baixar quando o workflow estiver verde
-Acesse [GitHub Actions](https://github.com/Sulyvan93/plugins/actions), abra o workflow
-**Trem de Medir - macOS Apple Silicon** e, ao final de uma execução concluída com sucesso,
-baixe o artefato **TremDeMedir-macOS-arm64**. Ele contém ZIPs com
-`TremDeMedir.component`, `TremDeMedir.vst3` e o aplicativo, caso este seja gerado.
+## Compilar no Mac M4 ou baixar no GitHub
+Os workflows **Trem de Medir - macOS ARM64 (15)** e **(26)** geram os pacotes
+`TremDeMedir.component`, `TremDeMedir.vst3` e, quando possível, aplicativo.
+O pacote **TremDeMedir-macOS-arm64** só estará disponível em execuções verdes
+com a etapa de publicação de artefatos aprovada.
 
-## Instalar
-- AU: descompacte e coloque `TremDeMedir.component` em `~/Library/Audio/Plug-Ins/Components/`
-- VST3: descompacte e coloque `TremDeMedir.vst3` em `~/Library/Audio/Plug-Ins/VST3/`
-- Feche e reabra Logic Pro e Mixbus.
+Se o GitHub não disponibilizar runners macOS, use a alternativa local:
+**Code > Download ZIP**, descompacte e execute com duplo clique
+`scripts/compilar_no_mac.command` no seu Mac mini M4.
+O script exige ferramentas de desenvolvimento Apple e CMake, executa testes,
+compila, assina localmente (ad hoc), cria ZIPs, faz backup de versões anteriores
+e instala os plugins na conta atual. Detalhes em [COMO_COMPILAR_NO_GITHUB.md](COMO_COMPILAR_NO_GITHUB.md).
 
-Os binários gerados no CI não são assinados/notarizados pela Apple. Ajustes de
-assinatura e validação nos aplicativos ainda poderão ser necessários.
+**Locais de instalação:**
+- AU: `~/Library/Audio/Plug-Ins/Components/TremDeMedir.component`
+- VST3: `~/Library/Audio/Plug-Ins/VST3/TremDeMedir.vst3`
+- App: `~/Applications/TremDeMedir.app`
+
+Os binários ainda exigem validação no Logic Pro e no Mixbus; a assinatura local
+ad hoc não é notarização Apple.
 
 ## Testes locais (opcional)
 ```sh
