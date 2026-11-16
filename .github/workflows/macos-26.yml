@@ -8,6 +8,11 @@ on:
 permissions:
   contents: read
 
+# Mantem somente a execução mais nova por ambiente, evitando filas antigas.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   macos-arm64:
     name: Compilar AU, VST3 e aplicativo ARM64
