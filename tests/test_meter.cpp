@@ -1,3 +1,7 @@
+// Tests must be active even in Release (-DNDEBUG) builds.
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 #include "../Source/MeterDSP.h"
 #include <array>
 #include <cassert>

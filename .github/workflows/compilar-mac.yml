@@ -1,4 +1,4 @@
-name: Trem de Medir - macOS Apple Silicon
+name: Trem de Medir - macOS ARM64 (15)
 
 on:
   push:
@@ -11,8 +11,8 @@ permissions:
 jobs:
   macos-arm64:
     name: Compilar AU, VST3 e aplicativo ARM64
-    runs-on: macos-15-intel
-    timeout-minutes: 75
+    runs-on: macos-15
+    timeout-minutes: 55
     steps:
       - uses: actions/checkout@v4
       - name: Identificar ambiente de build
