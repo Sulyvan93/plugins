@@ -353,7 +353,7 @@ void TremDeMedirEditor::paintAnalogue(juce::Graphics& g,juce::Rectangle<int> r) 
     auto a=r.reduced(13,12).withTrimmedTop(23);
     const bool ppm=processor.state.getRawParameterValue("analog")->load()>.5f;
     const float ref=processor.state.getRawParameterValue("vuRef")->load();
-    const float data[2]={ppm?latest.ppmL:latest.vuLeft,ppm?latest.ppmR:latest.vuRight};
+    const float data[2]={ppm?latest.ppmLeft:latest.vuLeft,ppm?latest.ppmRight:latest.vuRight};
     const int meterH=(a.getHeight()-24)/2;
     for(int ch=0;ch<2;++ch) {
         auto m=juce::Rectangle<int>(a.getX(),a.getY()+ch*(meterH+9),a.getWidth(),meterH);
