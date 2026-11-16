@@ -13,22 +13,22 @@ juce::AudioProcessorValueTreeState::ParameterLayout TremDeMedirProcessor::makePa
     p.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"ceiling",1}, "Teto True Peak",range(-12,0),-1.0f));
     p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"gate",1}, "Gate Integrado",juce::StringArray{"Desligado","-8 LU","-10 LU"},2));
     p.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"truepeak",1},"True Peak HQ 8x",false));
-    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"history",1}, "Captação Histórico",juce::StringArray{"Contínuo","Somente reprodução","Reset no Play"},0));
-    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"meterstyle",1},"Escala Digital",juce::StringArray{"Não linear","Linear","K-20","K-14","K-12"},0));
-    p.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"vuRef",1},"Referência 0 VU dBFS",range(-30,-6,0.5f),-18.0f));
-    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"analog",1},"Tipo Analógico",juce::StringArray{"VU","PPM"},0));
-    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"weighting",1},"Ponderação RTA",juce::StringArray{"Nenhuma","A","C"},0));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"history",1}, juce::String::fromUTF8("Captação Histórico"),juce::StringArray{juce::String::fromUTF8("Contínuo"),juce::String::fromUTF8("Somente reprodução"),"Reset no Play"},0));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"meterstyle",1},"Escala Digital",juce::StringArray{juce::String::fromUTF8("Não linear"),"Linear","K-20","K-14","K-12"},0));
+    p.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"vuRef",1},juce::String::fromUTF8("Referência 0 VU dBFS"),range(-30,-6,0.5f),-18.0f));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"analog",1},juce::String::fromUTF8("Tipo Analógico"),juce::StringArray{"VU","PPM"},0));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"weighting",1},juce::String::fromUTF8("Ponderação RTA"),juce::StringArray{"Nenhuma","A","C"},0));
     p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"rtaSource",1},"Fonte RTA",juce::StringArray{"L+R","Esquerda","Direita"},0));
-    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"lfe",1},"Posição LFE",juce::StringArray{"4º canal (ITU)","6º canal (Logic)","Sem LFE"},0));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"lfe",1},juce::String::fromUTF8("Posição LFE"),juce::StringArray{juce::String::fromUTF8("4º canal (ITU)"),juce::String::fromUTF8("6º canal (Logic)"),"Sem LFE"},0));
     p.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"alerts",1},"Alertas",true));
-    p.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"logging",1},"CSV automático",false));
+    p.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"logging",1},juce::String::fromUTF8("CSV automático"),false));
     p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"logInterval",1},"Intervalo log",juce::StringArray{"1 s","5 s","10 s","30 s"},1));
     return p;
 }
 TremDeMedirProcessor::TremDeMedirProcessor()
     : AudioProcessor(BusesProperties()
        .withInput("Entrada",juce::AudioChannelSet::stereo(),true)
-       .withOutput("Saída",juce::AudioChannelSet::stereo(),true)),
+       .withOutput(juce::String::fromUTF8("Saída"),juce::AudioChannelSet::stereo(),true)),
       state(*this,&undoManager,"TREM_PARAMS",makeParameters()) {
     for (auto& v: scopeMono) v.store(0);
     for (auto& v: scopeLeft) v.store(0);

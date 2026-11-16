@@ -3,16 +3,17 @@
 #include <algorithm>
 
 namespace {
-const juce::Colour bg=juce::Colour::fromRGB(9,16,24);
-const juce::Colour panel=juce::Colour::fromRGB(20,32,43);
-const juce::Colour panelDark=juce::Colour::fromRGB(13,24,34);
-const juce::Colour grid=juce::Colour::fromRGB(45,65,76);
-const juce::Colour text=juce::Colour::fromRGB(231,239,239);
-const juce::Colour muted=juce::Colour::fromRGB(141,163,173);
-const juce::Colour turquoise=juce::Colour::fromRGB(89,218,197);
-const juce::Colour yellow=juce::Colour::fromRGB(248,197,109);
-const juce::Colour red=juce::Colour::fromRGB(254,111,115);
-const juce::Colour blue=juce::Colour::fromRGB(96,159,231);
+// Minas Gerais: white field and an unlettered red triangle.
+const juce::Colour bg=juce::Colour::fromRGB(244,243,240);
+const juce::Colour panel=juce::Colours::white;
+const juce::Colour panelDark=juce::Colour::fromRGB(237,238,240);
+const juce::Colour grid=juce::Colour::fromRGB(207,209,214);
+const juce::Colour text=juce::Colour::fromRGB(34,36,41);
+const juce::Colour muted=juce::Colour::fromRGB(96,100,110);
+const juce::Colour accent=juce::Colour::fromRGB(174,25,39);
+const juce::Colour yellow=juce::Colour::fromRGB(150,100,12);
+const juce::Colour red=juce::Colour::fromRGB(198,24,42);
+const juce::Colour blue=juce::Colour::fromRGB(50,101,150);
 constexpr float piF = juce::MathConstants<float>::pi;
 float normal(float db,float bottom=-60,float top=0) {return juce::jlimit(0.f,1.f,(db-bottom)/(top-bottom));}
 void setFont(juce::Graphics& g,float sz,bool bold=false) {
@@ -26,13 +27,13 @@ TremDeMedirEditor::TremDeMedirEditor(TremDeMedirProcessor& p)
     setOpaque(true);
     setSize(1280,920);
     setResizable(true,true);
-    setResizeLimits(1020,760,1800,1300);
+    setResizeLimits(1020,880,1800,1300);
     for (juce::Component* c : std::initializer_list<juce::Component*>{&preset,&gate,&history,&digitalMode,
                  &analogMode,&weighting,&rtaSource,&lfe,&logInterval,&target,&ceiling,&vuRef,
                  &highQuality,&alerts,&logging,&resetAll,&resetLoud,&undo,&redo,&ab,&copyBank,&loudView,&logFolder}) addAndMakeVisible(c);
-    preset.addItemList({"Spotify / vídeos (-14)","EBU R128 (-23)","Apple referência (-16)",
-        "YouTube referência (-14)","ATSC A/85 (-24)","Netflix referência (-27)",
-        "Spotify Loud (-11)","Estúdio (-18)"},1);
+    preset.addItemList({juce::String::fromUTF8("Spotify / vídeos (-14)"),"EBU R128 (-23)",juce::String::fromUTF8("Apple referência (-16)"),
+        juce::String::fromUTF8("YouTube referência (-14)"),"ATSC A/85 (-24)",juce::String::fromUTF8("Netflix referência (-27)"),
+        "Spotify Loud (-11)",juce::String::fromUTF8("Estúdio (-18)")},1);
     preset.onChange=[this] {processor.loadReferencePreset(preset.getSelectedItemIndex());};
     auto attachCombo=[this](juce::ComboBox& c,const juce::String& id,const juce::StringArray& items) {
         c.addItemList(items,1);
@@ -40,16 +41,16 @@ TremDeMedirEditor::TremDeMedirEditor(TremDeMedirProcessor& p)
         combos.push_back(std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(processor.state,id,c));
     };
     attachCombo(gate,"gate",{"Sem gate","Gate -8 LU","Gate -10 LU"});
-    attachCombo(history,"history",{"Contínuo","Play","Reset no Play"});
-    attachCombo(digitalMode,"meterstyle",{"Não linear","Linear","K-20","K-14","K-12"});
+    attachCombo(history,"history",{juce::String::fromUTF8("Contínuo"),"Play","Reset no Play"});
+    attachCombo(digitalMode,"meterstyle",{juce::String::fromUTF8("Não linear"),"Linear","K-20","K-14","K-12"});
     attachCombo(analogMode,"analog",{"VU","PPM"});
     attachCombo(weighting,"weighting",{"Sem peso","A","C"});
     attachCombo(rtaSource,"rtaSource",{"L + R","L","R"});
-    attachCombo(lfe,"lfe",{"LFE: 4º","LFE: 6º","Sem LFE"});
+    attachCombo(lfe,"lfe",{juce::String::fromUTF8("LFE: 4º"),juce::String::fromUTF8("LFE: 6º"),"Sem LFE"});
     attachCombo(logInterval,"logInterval",{"1 s","5 s","10 s","30 s"});
     style(preset);preset.setSelectedId(1,juce::dontSendNotification);
     style(loudView);
-    loudView.addItemList({"Histórico", "Histograma"},1);
+    loudView.addItemList({juce::String::fromUTF8("Histórico"), "Histograma"},1);
     loudView.setSelectedId(1,juce::dontSendNotification);
     loudView.onChange=[this] {repaint();};
     auto attachSlider=[this](juce::Slider& s,const juce::String& id) {
@@ -61,7 +62,7 @@ TremDeMedirEditor::TremDeMedirEditor(TremDeMedirProcessor& p)
     attachSlider(target,"target");attachSlider(ceiling,"ceiling");attachSlider(vuRef,"vuRef");
     auto attachToggle=[this](juce::ToggleButton& b,const juce::String& id,const juce::String& label) {
         b.setButtonText(label);b.setColour(juce::ToggleButton::textColourId,text);
-        b.setColour(juce::ToggleButton::tickColourId,turquoise);
+        b.setColour(juce::ToggleButton::tickColourId,accent);
         toggles.push_back(std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(processor.state,id,b));
     };
     attachToggle(highQuality,"truepeak","TP 8x");
@@ -96,23 +97,23 @@ void TremDeMedirEditor::style(juce::ComboBox& c) {
     c.setColour(juce::ComboBox::backgroundColourId,panel);
     c.setColour(juce::ComboBox::textColourId,text);
     c.setColour(juce::ComboBox::outlineColourId,grid);
-    c.setColour(juce::ComboBox::arrowColourId,turquoise);
+    c.setColour(juce::ComboBox::arrowColourId,accent);
 }
 void TremDeMedirEditor::style(juce::TextButton& b) {
-    b.setColour(juce::TextButton::buttonColourId,juce::Colour::fromRGB(32,54,67));
+    b.setColour(juce::TextButton::buttonColourId,panel);
     b.setColour(juce::TextButton::textColourOffId,text);
-    b.setColour(juce::TextButton::buttonOnColourId,juce::Colour::fromRGB(35,91,87));
+    b.setColour(juce::TextButton::buttonOnColourId,juce::Colour::fromRGB(249,225,228));
     b.setMouseCursor(juce::MouseCursor::PointingHandCursor);
 }
 void TremDeMedirEditor::style(juce::Slider& s) {
-    s.setColour(juce::Slider::trackColourId,turquoise);
+    s.setColour(juce::Slider::trackColourId,accent);
     s.setColour(juce::Slider::thumbColourId,yellow);
     s.setColour(juce::Slider::textBoxTextColourId,text);
     s.setColour(juce::Slider::textBoxBackgroundColourId,panelDark);
     s.setColour(juce::Slider::textBoxOutlineColourId,grid);
 }
 TremDeMedirEditor::PanelRects TremDeMedirEditor::panels() const {
-    const int margin=16,gap=10,header=117,footer=42;
+    const int margin=16,gap=10,header=164,footer=42;
     const int body=getHeight()-header-footer-margin*2-gap*2;
     const int loudH=(int)(body*0.34),middleH=(int)(body*0.34),specH=body-loudH-middleH;
     auto loud=juce::Rectangle<int>(margin,header,getWidth()-2*margin,loudH);
@@ -127,12 +128,13 @@ TremDeMedirEditor::PanelRects TremDeMedirEditor::panels() const {
 }
 void TremDeMedirEditor::resized() {
     const int w=getWidth();
-    const int presetX=std::max(255,w/4);
-    preset.setBounds(presetX,14,170,30);
-    target.setBounds(presetX+183,13,190,30);
-    ceiling.setBounds(presetX+385,13,190,30);
+    // Give the brand and reference controls separate rows at every window size.
+    const int column=(w-52)/3;
+    preset.setBounds(16,75,column,30);
+    target.setBounds(26+column,75,column,30);
+    ceiling.setBounds(36+2*column,75,column,30);
     resetAll.setBounds(w-140,14,120,30);
-    const int x=16,y=72,h=29,gap=4;
+    const int x=16,y=121,h=29,gap=4;
     // Progressive widths fit the 1020 px minimum size.
     const int each=(w-32-10*gap)/11;
     int at=x;
@@ -155,43 +157,47 @@ void TremDeMedirEditor::resized() {
 void TremDeMedirEditor::section(juce::Graphics& g,juce::Rectangle<int> r,const juce::String& heading) const {
     g.setColour(panel);g.fillRoundedRectangle(r.toFloat(),7);
     g.setColour(grid);g.drawRoundedRectangle(r.toFloat().reduced(.5f),7,1);
-    g.setColour(turquoise);setFont(g,13,true);
+    g.setColour(accent);setFont(g,13,true);
     g.drawText(heading,r.reduced(15,9).removeFromTop(21),juce::Justification::centredLeft);
 }
 void TremDeMedirEditor::paint(juce::Graphics& g) {
     g.fillAll(bg);
     auto p=panels();
-    g.setColour(turquoise);setFont(g,25,true);
-    g.drawText("TREM DE MEDIR",juce::Rectangle<int>(20,9,295,37),juce::Justification::centredLeft);
+    g.setColour(panel);g.fillRect(0,0,getWidth(),61);
+    juce::Path triangle;
+    triangle.addTriangle(42.f,12.f,20.f,49.f,64.f,49.f);
+    g.setColour(red);g.fillPath(triangle);
+    g.setColour(text);setFont(g,25,true);
+    g.drawText("TREM DE MEDIR",juce::Rectangle<int>(80,7,295,34),juce::Justification::centredLeft);
     g.setColour(muted);setFont(g,11);
-    g.drawText("MEDIÇÃO DE ÁUDIO • EDIÇÃO INDEPENDENTE",juce::Rectangle<int>(21,44,350,17),juce::Justification::centredLeft);
+    g.drawText(juce::String::fromUTF8("MINAS GERAIS • MEDIÇÃO DE ÁUDIO"),juce::Rectangle<int>(81,38,350,17),juce::Justification::centredLeft);
     setFont(g,11,true);g.setColour(muted);
-    const int presetX=std::max(255,getWidth()/4);
-    g.drawText("PRESET",juce::Rectangle<int>(presetX,0,110,15),juce::Justification::centredLeft);
-    g.drawText("ALVO LUFS",juce::Rectangle<int>(presetX+183,0,100,15),juce::Justification::centredLeft);
-    g.drawText("TETO dBTP",juce::Rectangle<int>(presetX+385,0,100,15),juce::Justification::centredLeft);
-    section(g,p.loud,"01  •  LOUDNESS E DINÂMICA");
-    section(g,p.digital,"02  •  PEAK / RMS MULTICANAL");
-    section(g,p.stereo,"03  •  ESTÉREO / CORRELAÇÃO");
-    section(g,p.analogue,"04  •  VU / PPM");
-    section(g,p.spectrum,"05  •  RTA 31 BANDAS (1/3 DE OITAVA)");
+    const int column=(getWidth()-52)/3;
+    g.drawText("PRESET",juce::Rectangle<int>(16,59,110,15),juce::Justification::centredLeft);
+    g.drawText("ALVO LUFS",juce::Rectangle<int>(26+column,59,100,15),juce::Justification::centredLeft);
+    g.drawText("TETO dBTP",juce::Rectangle<int>(36+2*column,59,100,15),juce::Justification::centredLeft);
+    section(g,p.loud,juce::String::fromUTF8("01  •  LOUDNESS E DINÂMICA"));
+    section(g,p.digital,juce::String::fromUTF8("02  •  PEAK / RMS MULTICANAL"));
+    section(g,p.stereo,juce::String::fromUTF8("03  •  ESTÉREO / CORRELAÇÃO"));
+    section(g,p.analogue,juce::String::fromUTF8("04  •  VU / PPM"));
+    section(g,p.spectrum,juce::String::fromUTF8("05  •  RTA 31 BANDAS (1/3 DE OITAVA)"));
     paintLoudness(g,p.loud);paintDigital(g,p.digital);paintStereo(g,p.stereo);
     paintAnalogue(g,p.analogue);paintSpectrum(g,p.spectrum);
     g.setColour(muted);setFont(g,11);
     g.drawText("0 VU",p.footer.getX()+481,p.footer.getY()+5,70,20,juce::Justification::centredLeft);
     if(getWidth()>1190)
-        g.drawText("AUDIO TRANSPARENTE • 72 s",juce::Rectangle<int>(p.footer.getX()+755,p.footer.getY()+5,200,20),juce::Justification::centredLeft);
+        g.drawText(juce::String::fromUTF8("AUDIO TRANSPARENTE • 72 s"),juce::Rectangle<int>(p.footer.getX()+755,p.footer.getY()+5,200,20),juce::Justification::centredLeft);
 }
 void TremDeMedirEditor::paintReadout(juce::Graphics& g,juce::Rectangle<int> r,const juce::String& name,
                                     float number,const juce::String& suffix,bool alert) const {
     g.setColour(panelDark);g.fillRoundedRectangle(r.toFloat(),5);
-    g.setColour(alert?red:muted);setFont(g,11,true);
-    g.drawText(name,r.reduced(8,4).removeFromTop(17),juce::Justification::centredLeft);
-    g.setColour(alert?red:text);setFont(g,std::min(23.f,r.getHeight()*.34f),true);
-    const auto val=number < -95 ? juce::String("—") : juce::String(number,1);
-    g.drawText(val,r.getX()+7,r.getY()+22,r.getWidth()-16,28,juce::Justification::centredLeft);
+    g.setColour(alert?red:muted);setFont(g,10,true);
+    g.drawText(name,r.reduced(8,3).removeFromTop(13),juce::Justification::centredLeft);
+    g.setColour(alert?red:text);setFont(g,std::min(23.f,(r.getHeight()-29.f)*.8f),true);
+    const auto val=number < -95 ? juce::String(juce::String::fromUTF8("—")) : juce::String(number,1);
+    g.drawText(val,r.getX()+8,r.getY()+16,r.getWidth()-16,r.getHeight()-29,juce::Justification::centredLeft);
     g.setColour(muted);setFont(g,10);
-    g.drawText(suffix,r.getX()+8,r.getBottom()-18,r.getWidth()-16,15,juce::Justification::centredLeft);
+    g.drawText(suffix,r.getX()+8,r.getBottom()-13,r.getWidth()-16,12,juce::Justification::centredLeft);
 }
 void TremDeMedirEditor::paintLoudness(juce::Graphics& g,juce::Rectangle<int> r) {
     auto inner=r.reduced(15).withTrimmedTop(25);
@@ -217,7 +223,7 @@ void TremDeMedirEditor::paintLoudness(juce::Graphics& g,juce::Rectangle<int> r) 
         const float tx=plot.getX()+normal(targetDb)*plot.getWidth();
         g.setColour(yellow);g.drawLine(tx,(float)plot.getY(),tx,(float)plot.getBottom(),2.f);
         g.setColour(muted);setFont(g,10);
-        g.drawText("DISTRIBUIÇÃO DE LUFS DE CURTO PRAZO",graph.getX()+20,
+        g.drawText(juce::String::fromUTF8("DISTRIBUIÇÃO DE LUFS DE CURTO PRAZO"),graph.getX()+20,
                    graph.getBottom()-20,graph.getWidth()-35,15,juce::Justification::centredLeft);
     } else {
         for(int db=-60;db<=0;db+=10) {
@@ -244,7 +250,7 @@ void TremDeMedirEditor::paintLoudness(juce::Graphics& g,juce::Rectangle<int> r) 
             } else firstI=true;
         }
         g.setColour(blue);g.strokePath(lineST,juce::PathStrokeType(1.6f));
-        g.setColour(turquoise);g.strokePath(lineI,juce::PathStrokeType(2.f));
+        g.setColour(accent);g.strokePath(lineI,juce::PathStrokeType(2.f));
         g.setColour(muted);setFont(g,10);
         // Minimap / universe view of the currently retained loudness history.
         const auto mini=juce::Rectangle<float>((float)plot.getX(),(float)plot.getBottom()+6,
@@ -267,12 +273,12 @@ void TremDeMedirEditor::paintLoudness(juce::Graphics& g,juce::Rectangle<int> r) 
     const bool alertsOn=processor.state.getRawParameterValue("alerts")->load()>.5f;
     const bool overI=alertsOn && latest.integrated > targetDb+1;
     const bool overPeak=alertsOn && latest.truePeakMax > ceilingVal;
-    struct Readout {const char* title;float value;const char* unit;bool warn;};
+    struct Readout {juce::String title;float value;const char* unit;bool warn;};
     std::array<Readout,9> info = {{{"INTEGRADO",latest.integrated,"LUFS",overI},
-      {"CURTO PRAZO",latest.shortTerm,"LUFS",false},{"MOMENTÂNEO",latest.momentary,"LUFS",false},
+      {"CURTO PRAZO",latest.shortTerm,"LUFS",false},{juce::String::fromUTF8("MOMENTÂNEO"),latest.momentary,"LUFS",false},
       {"TRUE PEAK",latest.truePeakMax,"dBTP",overPeak},{"LRA",latest.lra,"LU",false},
       {"PLR",latest.plr,"dB",false},{"PSR",latest.psr,"dB",false},
-      {"MÁX. CURTO",latest.shortTermMax,"LUFS",false},{"MÁX. MOM.",latest.momentaryMax,"LUFS",false}}};
+      {juce::String::fromUTF8("MÁX. CURTO"),latest.shortTermMax,"LUFS",false},{juce::String::fromUTF8("MÁX. MOM."),latest.momentaryMax,"LUFS",false}}};
     for(int i=0;i<9;++i) paintReadout(g,{stats.getX()+(i%cols)*(tileW+gap),
           stats.getY()+(i/cols)*(tileH+gap),tileW,tileH},info[i].title,info[i].value,
           info[i].unit,info[i].warn);
@@ -300,7 +306,7 @@ void TremDeMedirEditor::paintDigital(juce::Graphics& g,juce::Rectangle<int> r) {
         const float bw=std::max(5.f,barSpace);
         g.setColour(panelDark);g.fillRoundedRectangle((float)x,graphTop,bw,(float)fullHeight,2);
         g.setColour(blue.withAlpha(.75f));g.fillRect((float)x,yRms,bw,(float)(graphBottom-yRms));
-        g.setColour(turquoise);g.fillRect((float)x,yPeak,bw,3.f);
+        g.setColour(accent);g.fillRect((float)x,yPeak,bw,3.f);
         g.setColour(latest.maxPeakDb[c]>-0.1?red:yellow);g.fillRect((float)x,yMax,bw,2.f);
         g.setColour(muted);setFont(g,10);
         g.drawText(juce::String(c+1),x-4,graphBottom+3,(int)bw+8,15,juce::Justification::centred);
@@ -324,7 +330,7 @@ void TremDeMedirEditor::paintDigital(juce::Graphics& g,juce::Rectangle<int> r) {
 void TremDeMedirEditor::paintStereo(juce::Graphics& g,juce::Rectangle<int> r) {
     auto a=r.reduced(13,13).withTrimmedTop(23);
     if(latest.channels>2) {g.setColour(muted);setFont(g,13);g.drawFittedText(
-        "Vectorscópio: disponível em mono / estéreo.\n\nCanal atual: " + juce::String(latest.channels),
+        juce::String::fromUTF8("Vectorscópio: disponível em mono / estéreo.\n\nCanal atual: ") + juce::String(latest.channels),
         a,juce::Justification::centred,3);return;}
     const int dimension=std::min(a.getWidth()-20,a.getHeight()-55);
     auto scope=juce::Rectangle<int>(a.getCentreX()-dimension/2,a.getY()+3,dimension,dimension);
@@ -332,7 +338,7 @@ void TremDeMedirEditor::paintStereo(juce::Graphics& g,juce::Rectangle<int> r) {
     g.setColour(grid);g.drawEllipse(scope.toFloat(),1);
     g.drawLine((float)scope.getCentreX(),(float)scope.getY(),(float)scope.getCentreX(),(float)scope.getBottom());
     g.drawLine((float)scope.getX(),(float)scope.getCentreY(),(float)scope.getRight(),(float)scope.getCentreY());
-    g.setColour(turquoise.withAlpha(.43f));
+    g.setColour(accent.withAlpha(.43f));
     for(int i=0;i<4096;i+=12) {
         const float l=sourceLeft[(size_t)i],rchan=sourceRight[(size_t)i];
         const float x=(l-rchan)*.7071f,y=(l+rchan)*.7071f;
@@ -343,8 +349,8 @@ void TremDeMedirEditor::paintStereo(juce::Graphics& g,juce::Rectangle<int> r) {
     const auto bottom=a.getBottom()-30;
     g.setColour(muted);setFont(g,11);
     g.drawText("FASE",a.getX()+8,bottom,a.getWidth()/2-8,15,juce::Justification::centredLeft);
-    g.drawText("BALANÇO",a.getCentreX()+8,bottom,a.getWidth()/2-8,15,juce::Justification::centredLeft);
-    g.setColour(latest.phase<-.1f?red:turquoise);setFont(g,16,true);
+    g.drawText(juce::String::fromUTF8("BALANÇO"),a.getCentreX()+8,bottom,a.getWidth()/2-8,15,juce::Justification::centredLeft);
+    g.setColour(latest.phase<-.1f?red:accent);setFont(g,16,true);
     g.drawText(juce::String(latest.phase,2),a.getX()+8,bottom+13,a.getWidth()/2-8,22,juce::Justification::centredLeft);
     g.setColour(text);
     g.drawText(juce::String(latest.balance,2),a.getCentreX()+8,bottom+13,a.getWidth()/2-8,22,juce::Justification::centredLeft);
@@ -357,6 +363,8 @@ void TremDeMedirEditor::paintAnalogue(juce::Graphics& g,juce::Rectangle<int> r) 
     const int meterH=(a.getHeight()-24)/2;
     for(int ch=0;ch<2;++ch) {
         auto m=juce::Rectangle<int>(a.getX(),a.getY()+ch*(meterH+9),a.getWidth(),meterH);
+        juce::Graphics::ScopedSaveState meterClip(g);
+        g.reduceClipRegion(m);
         g.setColour(juce::Colour::fromRGB(229,223,203));g.fillRoundedRectangle(m.toFloat(),7);
         g.setColour(juce::Colour::fromRGB(42,45,46));
         const float cx=m.getCentreX(),cy=m.getBottom()+meterH*.23f;
@@ -396,7 +404,7 @@ void TremDeMedirEditor::paintSpectrum(juce::Graphics& g,juce::Rectangle<int> r) 
         g.setColour(panelDark);g.fillRect(x,(float)plot.getY(),barWidth-4,(float)plot.getHeight());
         g.setColour(i==selectedBand?yellow:blue);
         g.fillRect(x,y,barWidth-4,(float)plot.getBottom()-y);
-        g.setColour(i==selectedBand?red:turquoise.withAlpha(.7f));
+        g.setColour(i==selectedBand?red:accent.withAlpha(.7f));
         g.fillRect(x,ymax,barWidth-4,2.f);
         if(i%3==0 || i==30) {
             const float hz=20*std::pow(2.f,i/3.f);
@@ -409,7 +417,7 @@ void TremDeMedirEditor::paintSpectrum(juce::Graphics& g,juce::Rectangle<int> r) 
     auto i=juce::jlimit(0,30,hoveredBand<0?selectedBand:hoveredBand);
     const float hz=20*std::pow(2.f,i/3.f);
     g.drawText(juce::String(hz,0)+" Hz  |  " + juce::String(bands[(size_t)i],1)+
-               " dBFS  |  Máx. " + juce::String(maxBands[(size_t)i],1)+" dBFS",
+               juce::String::fromUTF8(" dBFS  |  Máx. ") + juce::String(maxBands[(size_t)i],1)+" dBFS",
                r.getRight()-345,r.getY()+9,330,18,juce::Justification::centredRight);
 }
 void TremDeMedirEditor::updateSpectrum() {

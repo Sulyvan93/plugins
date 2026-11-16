@@ -29,7 +29,7 @@ if ! xcrun --find clang >/dev/null 2>&1; then
   xcode-select --install || true
   exit 3
 fi
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+export PATH="$HOME/Applications/CMake.app/Contents/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
 if ! command -v cmake >/dev/null 2>&1; then
   if command -v brew >/dev/null 2>&1; then
     echo "Instalando CMake com Homebrew..."
@@ -56,6 +56,7 @@ VST="$(find "$ARTIFACTS" -type d -name '*.vst3' -print -quit)"
 APP="$(find "$ARTIFACTS" -type d -name '*.app' -print -quit)"
 [[ -n "$AU" && -d "$AU" ]] || { echo "AU não encontrado."; exit 5; }
 [[ -n "$VST" && -d "$VST" ]] || { echo "VST3 não encontrado."; exit 6; }
+[[ -n "$APP" && -d "$APP" ]] || { echo "Standalone não encontrado."; exit 9; }
 
 OUT="$HOME/Documents/Trem de Medir/Instaladores"
 STAGING="$OUT/Packages"
