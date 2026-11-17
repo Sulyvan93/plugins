@@ -3,6 +3,7 @@
 #include <atomic>
 #include <array>
 #include "MeterDSP.h"
+#include "AnalysisTools.h"
 
 class TremDeMedirProcessor final : public juce::AudioProcessor, private juce::Timer {
 public:
@@ -39,7 +40,16 @@ public:
     juce::File getLogFile() const;
     void loadReferencePreset(int index);
     bool isHighQualityActive() const noexcept { return currentHQ.load(); }
+    double detectedBpm() const { return bpm.load(); }
+    double tempoConfidence() const { return bpmConfidence.load(); }
+    double hostBpm() const { return hostTempo.load(); }
+    uint64_t clipSamples() const { return clips.load(); }
 private:
+    std::array<std::atomic<float>,4096> rhythm{};
+    std::atomic<uint64_t> rhythmPosition{0}, clips{0};
+    std::atomic<float> bpm{0},bpmConfidence{0},hostTempo{0};
+    trem::TempoTracker tempoTracker;
+    int rhythmSamples=0,rhythmHop=240; double rhythmEnergy=0;
     static juce::AudioProcessorValueTreeState::ParameterLayout makeParameters();
     void timerCallback() override;
     void publish(const trem::MeterSnapshot&) noexcept;

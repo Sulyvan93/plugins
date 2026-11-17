@@ -66,6 +66,7 @@ public:
     void reset() noexcept;
     void resetLoudness() noexcept;
     // 0: off; 8: relative -8 LU; 10: relative -10 LU
+    void setLoudnessPaused(bool paused) noexcept { loudnessPaused=paused; }
     void setGate(int relativeGate) noexcept { gateLu = relativeGate; }
     void setSurroundWeights(int lfeChannelIndex, float rearWeight = 1.41f) noexcept;
     void process(const float* const* channels, int numberOfChannels, int numSamples) noexcept;
@@ -83,6 +84,7 @@ private:
     double samplerate = 48000;
     int nChannels = 2, hopSamples = 4800, samplesInHop = 0, hopPointer = 0, hopsAvailable = 0;
     int gateLu = 10;
+    bool loudnessPaused=false;
     std::array<Biquad, maxChannels> shelf{}, highPass{};
     std::array<InterSamplePeak, maxChannels> interpolators{};
     std::array<double, maxChannels> rmsPower{}, vuPower{}, ppmFollower{};

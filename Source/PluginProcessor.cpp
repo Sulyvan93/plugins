@@ -13,22 +13,34 @@ juce::AudioProcessorValueTreeState::ParameterLayout TremDeMedirProcessor::makePa
     p.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"ceiling",1}, "Teto True Peak",range(-12,0),-1.0f));
     p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"gate",1}, "Gate Integrado",juce::StringArray{"Desligado","-8 LU","-10 LU"},2));
     p.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"truepeak",1},"True Peak HQ 8x",false));
-    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"history",1}, "Captação Histórico",juce::StringArray{"Contínuo","Somente reprodução","Reset no Play"},0));
-    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"meterstyle",1},"Escala Digital",juce::StringArray{"Não linear","Linear","K-20","K-14","K-12"},0));
-    p.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"vuRef",1},"Referência 0 VU dBFS",range(-30,-6,0.5f),-18.0f));
-    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"analog",1},"Tipo Analógico",juce::StringArray{"VU","PPM"},0));
-    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"weighting",1},"Ponderação RTA",juce::StringArray{"Nenhuma","A","C"},0));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"history",1}, juce::String::fromUTF8("Captação Histórico"),juce::StringArray{juce::String::fromUTF8("Contínuo"),juce::String::fromUTF8("Somente reprodução"),"Reset no Play"},0));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"meterstyle",1},"Escala Digital",juce::StringArray{juce::String::fromUTF8("Não linear"),"Linear","K-20","K-14","K-12"},0));
+    p.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"vuRef",1},juce::String::fromUTF8("Referência 0 VU dBFS"),range(-30,-6,0.5f),-18.0f));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"analog",1},juce::String::fromUTF8("Tipo Analógico"),juce::StringArray{"VU","PPM"},0));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"weighting",1},juce::String::fromUTF8("Ponderação RTA"),juce::StringArray{"Nenhuma","A","C"},0));
     p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"rtaSource",1},"Fonte RTA",juce::StringArray{"L+R","Esquerda","Direita"},0));
-    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"lfe",1},"Posição LFE",juce::StringArray{"4º canal (ITU)","6º canal (Logic)","Sem LFE"},0));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"lfe",1},juce::String::fromUTF8("Posição LFE"),juce::StringArray{juce::String::fromUTF8("4º canal (ITU)"),juce::String::fromUTF8("6º canal (Logic)"),"Sem LFE"},0));
     p.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"alerts",1},"Alertas",true));
-    p.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"logging",1},"CSV automático",false));
+    p.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"logging",1},juce::String::fromUTF8("CSV automático"),false));
     p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"logInterval",1},"Intervalo log",juce::StringArray{"1 s","5 s","10 s","30 s"},1));
+    p.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"measurePause",1},"Pausar loudness",false));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"loudUnits",1},"Unidade loudness",juce::StringArray{"LUFS","LU relativo"},0));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"bandCount",1},"Bandas RTA",juce::StringArray{"31 bandas","63 bandas","127 bandas"},1));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"rtaMode",1},"Detector RTA",juce::StringArray{"Peak","RMS Fast","RMS Slow"},1));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"levelMode",1},"Leitura de nivel",juce::StringArray{"Peak + RMS","Peak","RMS"},0));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"holdTime",1},"Retencao de picos",juce::StringArray{"0 s","1 s","2 s","5 s"},2));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"returnRate",1},"Retorno dB/s",juce::StringArray{"6 dB/s","12 dB/s","24 dB/s"},1));
+    p.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"peakHold",1},"Hold infinito",false));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"rtaRange",1},"Faixa RTA",juce::StringArray{"30 dB","60 dB","90 dB","120 dB"},2));
+    p.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"tuneRef",1},"Referencia A4 Hz",range(400,480,1),440.f));
+    p.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"lrMax",1},"Deteccao LR max",false));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"tempoOctave",1},"Oitava BPM",juce::StringArray{"Auto 60-120","/2","x2"},0));
     return p;
 }
 TremDeMedirProcessor::TremDeMedirProcessor()
     : AudioProcessor(BusesProperties()
        .withInput("Entrada",juce::AudioChannelSet::stereo(),true)
-       .withOutput("Saída",juce::AudioChannelSet::stereo(),true)),
+       .withOutput(juce::String::fromUTF8("Saída"),juce::AudioChannelSet::stereo(),true)),
       state(*this,&undoManager,"TREM_PARAMS",makeParameters()) {
     for (auto& v: scopeMono) v.store(0);
     for (auto& v: scopeLeft) v.store(0);
@@ -50,6 +62,7 @@ void TremDeMedirProcessor::prepareToPlay(double sr, int) {
     currentHQ.store(state.getRawParameterValue("truepeak")->load() > 0.5f);
     engine.prepare(sr, getTotalNumInputChannels(),currentHQ.load());
     lastHop=0; historyPosition.store(0); scopePosition.store(0);
+    rhythmHop=std::max(1,(int)std::round(sr/200.)); rhythmSamples=0;rhythmEnergy=0;rhythmPosition.store(0);bpm.store(0);bpmConfidence.store(0);clips.store(0);
     publish(engine.snapshot());
 }
 void TremDeMedirProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer&) {
@@ -59,7 +72,7 @@ void TremDeMedirProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::
     if(channels<=0 || n<=0) return;
     const auto request=resetPending.exchange(0);
     if(request) {
-        if(request==1) engine.resetLoudness(); else engine.reset();
+        if(request==1) engine.resetLoudness(); else {engine.reset();clips.store(0);}
         lastHop=0; historyPosition.store(0);
     }
     const bool hq = state.getRawParameterValue("truepeak")->load() > .5f;
@@ -86,7 +99,15 @@ void TremDeMedirProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::
     wasPlaying=playing;
     std::array<const float*,trem::maxChannels> pointers{};
     for(int c=0;c<channels;++c) pointers[c]=buffer.getReadPointer(c);
-    if(playing || historyMode==0) engine.process(pointers.data(),channels,n);
+    const bool capture=playing || historyMode==0;
+    engine.setLoudnessPaused(state.getRawParameterValue("measurePause")->load()>.5f);
+    if(capture) engine.process(pointers.data(),channels,n);
+    if(auto* ph=getPlayHead())if(auto pos=ph->getPosition())if(auto tempo=pos->getBpm())hostTempo.store((float)*tempo);
+    uint64_t blockClips=0;
+    for(int i=0;i<n;++i){double e=0;for(int c=0;c<channels;++c){double v=buffer.getSample(c,i);e+=v*v;if(std::abs(v)>=1.)++blockClips;}
+        if(capture){rhythmEnergy+=e/channels;if(++rhythmSamples>=rhythmHop){auto at=rhythmPosition.load(std::memory_order_relaxed);rhythm[at%rhythm.size()].store((float)std::sqrt(rhythmEnergy/rhythmSamples),std::memory_order_relaxed);rhythmPosition.store(at+1,std::memory_order_release);rhythmEnergy=0;rhythmSamples=0;}}
+    }
+    clips.fetch_add(blockClips,std::memory_order_relaxed);
     // Scope remains active even when the host transport is stopped.
     const auto base=scopePosition.load(std::memory_order_relaxed);
     for(int i=0;i<n;++i) {
@@ -175,6 +196,10 @@ juce::File TremDeMedirProcessor::getLogFile() const {
     return folder.getChildFile("TremDeMedir_" + juce::Time::getCurrentTime().formatted("%Y-%m-%d") + ".csv");
 }
 void TremDeMedirProcessor::timerCallback() {
+    std::array<float,4096> frames{};const auto pos=rhythmPosition.load(std::memory_order_acquire);int count=(int)std::min<uint64_t>(pos,frames.size());
+    for(int i=0;i<count;++i)frames[i]=rhythm[(pos-count+i)%rhythm.size()].load(std::memory_order_relaxed);
+    if(count<1200)tempoTracker.reset();
+    const auto estimate=tempoTracker.update(trem::detectTempo(frames.data(),count));bpm.store((float)estimate.bpm);bpmConfidence.store((float)estimate.confidence);
     if(state.getRawParameterValue("logging")->load()<.5f) { logElapsed=0;return; }
     const int index=(int)state.getRawParameterValue("logInterval")->load();
     const int seconds=index==0?1:index==1?5:index==2?10:30;
