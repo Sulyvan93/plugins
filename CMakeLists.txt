@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(TremDeMedir VERSION 0.1.0 LANGUAGES C CXX)
+project(TremDeMedir VERSION 0.2.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -10,6 +10,9 @@ if(TREM_DSP_TEST_ONLY)
     add_executable(trem_dsp_test Source/MeterDSP.cpp tests/test_meter.cpp)
     target_include_directories(trem_dsp_test PRIVATE Source)
     add_test(NAME AudioMeterDSP COMMAND trem_dsp_test)
+    add_executable(trem_analysis_test Source/MeterDSP.cpp tests/test_analysis.cpp)
+    target_include_directories(trem_analysis_test PRIVATE Source)
+    add_test(NAME AnalysisTools COMMAND trem_analysis_test)
     return()
 endif()
 
@@ -54,3 +57,13 @@ target_link_libraries(TremDeMedir PRIVATE
 target_compile_definitions(TremDeMedir PUBLIC
     JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0)
+
+option(TREM_PROCESSOR_TESTS "Test the built processor and state compatibility" OFF)
+if(TREM_PROCESSOR_TESTS)
+    enable_testing()
+    add_executable(trem_processor_test tests/test_processor.cpp)
+    target_include_directories(trem_processor_test PRIVATE "${juce_SOURCE_DIR}/modules" "${JUCE_SOURCE_DIR}/modules")
+    target_compile_definitions(trem_processor_test PRIVATE JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1)
+    target_link_libraries(trem_processor_test PRIVATE TremDeMedir)
+    add_test(NAME ProcessorIntegration COMMAND trem_processor_test)
+endif()

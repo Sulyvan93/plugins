@@ -200,8 +200,7 @@ void MeterEngine::process(const float* const* channels, int numberOfChannels, in
             blockTP[c]=std::max(blockTP[c],tp);
             result.truePeakMax=std::max(result.truePeakMax,tp);
         }
-        accumEnergy+=weighted;
-        ++samplesInHop;
+        if(!loudnessPaused){accumEnergy+=weighted;++samplesInHop;}
         if(available>=2) {
             leftPower=alphaPhase*leftPower+(1-alphaPhase)*l*l;
             rightPower=alphaPhase*rightPower+(1-alphaPhase)*r*r;
@@ -218,7 +217,7 @@ void MeterEngine::process(const float* const* channels, int numberOfChannels, in
     result.vuRight=toDb(std::sqrt(vuPower[available>=2?1:0]));
     result.ppmLeft=toDb(ppmFollower[0]);
     result.ppmRight=toDb(ppmFollower[available>=2?1:0]);
-    elapsed+=(double)numSamples/samplerate;
+    if(!loudnessPaused)elapsed+=(double)numSamples/samplerate;
     result.elapsedSeconds=(float)elapsed;
 }
 }
