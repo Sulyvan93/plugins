@@ -1,3 +1,5 @@
+> **Correção 0.2.1:** [resultados, ajustes de BPM e pendências de validação](CORRECOES_0_2_1.md).
+
 > **Versão 0.2.0:** interface Glass, afinador, BPM e novos controles de análise. [Novidades, testes e limitações](NOVIDADES_0_2.md).
 
 # Trem de Medir

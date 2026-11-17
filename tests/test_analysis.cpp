@@ -26,5 +26,11 @@ int main(){
     held=trem::heldPeak(-30,held,age,2,0,24,true);assert(held>-30);
     trem::MeterEngine m;m.prepare(48000,2);std::array<float,256> tone{};for(int i=0;i<256;++i)tone[i]=.2f*std::sin(2*pi*1000*i/48000.);const float* channels[]={tone.data(),tone.data()};for(int i=0;i<1000;++i)m.process(channels,2,256);
     auto before=m.snapshot();m.setLoudnessPaused(true);std::array<float,256> zero{};const float* zeros[]={zero.data(),zero.data()};for(int i=0;i<1000;++i)m.process(zeros,2,256);auto after=m.snapshot();assert(before.integrated==after.integrated);assert(before.completedHops==after.completedHops);assert(before.elapsedSeconds==after.elapsedSeconds);assert(after.rmsDb[0]<-60);m.setLoudnessPaused(false);m.process(channels,2,256);assert(m.snapshot().elapsedSeconds>after.elapsedSeconds);
+    trem::TempoTracker tracker;
+    assert(tracker.update({160,.7}).bpm==0);
+    assert(tracker.update({161,.72}).bpm==0);
+    auto consensus=tracker.update({159,.73});assert(std::abs(consensus.bpm-80)<1);
+    for(int i=0;i<4;++i)consensus=tracker.update({});assert(consensus.bpm==0);
+    for(int i=0;i<8;++i){tracker.reset();assert(tracker.update({200,.2}).bpm==0);}
     std::puts("ANALYSIS TESTS PASSED");
 }

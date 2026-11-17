@@ -17,7 +17,7 @@ int main(){
    for(int c=0;c<2;++c)assert(std::memcmp(original.getReadPointer(c),audio.getReadPointer(c),256*sizeof(float))==0);
   }plugin->releaseResources();std::printf("PASS transparent stereo %.0f Hz\n",sr);
  }
- assert(plugin->getParameters().size()==25);
+ assert(plugin->getParameters().size()==26);
  for(auto* p:plugin->getParameters())if(auto* rp=dynamic_cast<juce::RangedAudioParameter*>(p))if(rp->paramID=="bandCount"||rp->paramID=="measurePause"||rp->paramID=="truepeak")rp->setValueNotifyingHost(1.f);
  juce::MemoryBlock state;plugin->getStateInformation(state);assert(state.getSize()>0);
  std::unique_ptr<juce::AudioProcessor> restored(createPluginFilter());restored->setStateInformation(state.getData(),(int)state.getSize());

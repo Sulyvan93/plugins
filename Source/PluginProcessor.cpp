@@ -34,6 +34,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout TremDeMedirProcessor::makePa
     p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"rtaRange",1},"Faixa RTA",juce::StringArray{"30 dB","60 dB","90 dB","120 dB"},2));
     p.add(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID{"tuneRef",1},"Referencia A4 Hz",range(400,480,1),440.f));
     p.add(std::make_unique<juce::AudioParameterBool>(juce::ParameterID{"lrMax",1},"Deteccao LR max",false));
+    p.add(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID{"tempoOctave",1},"Oitava BPM",juce::StringArray{"Auto 60-120","/2","x2"},0));
     return p;
 }
 TremDeMedirProcessor::TremDeMedirProcessor()
@@ -197,7 +198,8 @@ juce::File TremDeMedirProcessor::getLogFile() const {
 void TremDeMedirProcessor::timerCallback() {
     std::array<float,4096> frames{};const auto pos=rhythmPosition.load(std::memory_order_acquire);int count=(int)std::min<uint64_t>(pos,frames.size());
     for(int i=0;i<count;++i)frames[i]=rhythm[(pos-count+i)%rhythm.size()].load(std::memory_order_relaxed);
-    const auto estimate=trem::detectTempo(frames.data(),count);bpm.store((float)estimate.bpm);bpmConfidence.store((float)estimate.confidence);
+    if(count<1200)tempoTracker.reset();
+    const auto estimate=tempoTracker.update(trem::detectTempo(frames.data(),count));bpm.store((float)estimate.bpm);bpmConfidence.store((float)estimate.confidence);
     if(state.getRawParameterValue("logging")->load()<.5f) { logElapsed=0;return; }
     const int index=(int)state.getRawParameterValue("logInterval")->load();
     const int seconds=index==0?1:index==1?5:index==2?10:30;

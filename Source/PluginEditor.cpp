@@ -50,7 +50,7 @@ TremDeMedirEditor::TremDeMedirEditor(TremDeMedirProcessor& p)
     setResizeLimits(1120,1040,1800,1500);
     for (juce::Component* c : std::initializer_list<juce::Component*>{&preset,&gate,&history,&digitalMode,
                  &analogMode,&weighting,&rtaSource,&lfe,&logInterval,&target,&ceiling,&vuRef,
-                 &highQuality,&alerts,&logging,&resetAll,&resetLoud,&undo,&redo,&ab,&copyBank,&loudView,&logFolder,&loudUnits,&bandCount,&rtaMode,&levelMode,&holdTime,&returnRate,&rtaRange,&measurePause,&peakHold,&lrMax,&tuneRef,&tap,&resetPeaks}) addAndMakeVisible(c);
+                 &highQuality,&alerts,&logging,&resetAll,&resetLoud,&undo,&redo,&ab,&copyBank,&loudView,&logFolder,&loudUnits,&bandCount,&rtaMode,&levelMode,&holdTime,&returnRate,&rtaRange,&tempoOctave,&measurePause,&peakHold,&lrMax,&tuneRef,&tap,&resetPeaks}) addAndMakeVisible(c);
     preset.addItemList({juce::String::fromUTF8("Spotify / vídeos (-14)"),"EBU R128 (-23)",juce::String::fromUTF8("Apple referência (-16)"),
         juce::String::fromUTF8("YouTube referência (-14)"),"ATSC A/85 (-24)",juce::String::fromUTF8("Netflix referência (-27)"),
         "Spotify Loud (-11)",juce::String::fromUTF8("Estúdio (-18)")},1);
@@ -68,6 +68,8 @@ TremDeMedirEditor::TremDeMedirEditor(TremDeMedirProcessor& p)
     attachCombo(rtaSource,"rtaSource",{"Mono L+R","L","R"});
     attachCombo(lfe,"lfe",{juce::String::fromUTF8("LFE: 4º"),juce::String::fromUTF8("LFE: 6º"),"Sem LFE"});
     attachCombo(logInterval,"logInterval",{"1 s","5 s","10 s","30 s"});
+    attachCombo(tempoOctave,"tempoOctave",{"Auto","/2","x2"});
+    tempoOctave.setTooltip("Auto: pulso de 60 a 120 BPM. /2 e x2 resolvem a oitava ritmica.");
     attachCombo(loudUnits,"loudUnits",{"LUFS","LU relativo"});
     attachCombo(bandCount,"bandCount",{"31 bandas","63 bandas","127 bandas"});
     attachCombo(rtaMode,"rtaMode",{"Peak","RMS Fast","RMS Slow"});
@@ -181,6 +183,7 @@ void TremDeMedirEditor::resized() {
     put(highQuality);put(alerts);put(logging);
     tuneRef.setBounds(237,190,165,26);
     tap.setBounds((int)(w*.64f),190,65,26);
+    tempoOctave.setBounds((int)(w*.64f),165,65,22);
     const auto spec=panels().spectrum;
     const int item=(spec.getWidth()-40)/9;
     juce::Component* sc[]={&bandCount,&rtaMode,&rtaSource,&weighting,&rtaRange,&holdTime,&returnRate,&peakHold,&lrMax};
@@ -475,7 +478,7 @@ void TremDeMedirEditor::paintSpectrum(juce::Graphics& g,juce::Rectangle<int> r) 
     g.setColour(text);setFont(g,11,true);
     auto i=juce::jlimit(0,n-1,hoveredBand<0?selectedBand:hoveredBand);
     const float hz=20*std::pow(1000.f,(float)i/(n-1));
-    g.drawText(juce::String(hz,0)+" Hz  |  " + juce::String(bands[(size_t)i],1)+
+    g.drawText(juce::String((int)std::round(hz))+" Hz  |  " + juce::String(bands[(size_t)i],1)+
                juce::String::fromUTF8(" dBFS  |  Máx. ") + juce::String(maxBands[(size_t)i],1)+" dBFS",
                r.getRight()-345,r.getY()+9,330,18,juce::Justification::centredRight);
 }
@@ -524,12 +527,12 @@ void TremDeMedirEditor::paintTools(juce::Graphics& g){
     g.setColour(grid);g.drawLine(32,225,221,225,2);g.drawVerticalLine(126,221,229);
     if(pitch.hz>0){float marker=126.f+(float)juce::jlimit(-50.,50.,pitchCents)*1.8f;g.setColour(std::abs(pitchCents)<5?blue:accent);g.fillEllipse(marker-3,222,6,6);}
     g.setColour(muted);setFont(g,10,true);g.drawText("TEMPO / AUDIO",middle+16,169,220,15,juce::Justification::centredLeft);
-    g.setColour(text);setFont(g,26,true);g.drawText(processor.detectedBpm()>0?juce::String(processor.detectedBpm(),1):noSignal,middle+16,187,112,32,juce::Justification::centredLeft);
-    g.setColour(muted);setFont(g,10);g.drawText("BPM ESTIMADO",middle+16,219,112,12,juce::Justification::centredLeft);
+    g.setColour(text);setFont(g,26,true);g.drawText(processor.detectedBpm()>0?juce::String(processor.detectedBpm()*(tempoOctave.getSelectedId()==2?.5:tempoOctave.getSelectedId()==3?2.:1.),1):noSignal,middle+16,187,112,32,juce::Justification::centredLeft);
+    g.setColour(muted);setFont(g,10);g.drawText("BPM EXPERIMENTAL",middle+16,219,112,12,juce::Justification::centredLeft);
     g.drawText(processor.hostBpm()>0?"HOST "+juce::String(processor.hostBpm(),1)+" BPM":juce::String::fromUTF8("HOST —"),middle+139,188,140,16,juce::Justification::centredLeft);
-    g.drawText(tapTempo>0?"TAP "+juce::String(tapTempo,1):processor.detectedBpm()>0?"CONFIANCA "+juce::String(processor.tempoConfidence()*100,0)+"%":"Aguardando pulsacao",middle+139,207,150,16,juce::Justification::centredLeft);
+    g.drawText(tapTempo>0?"TAP "+juce::String(tapTempo,1):processor.detectedBpm()>0?"CONFIANCA "+juce::String((int)std::round(processor.tempoConfidence()*100))+"%":latest.rmsDb[0]>-70?"BPM incerto: use TAP":"Aguardando pulsacao",middle+139,207,150,16,juce::Justification::centredLeft);
     g.setColour(muted);setFont(g,10,true);g.drawText("SESSAO DE MEDICAO",session+16,169,230,16,juce::Justification::centredLeft);
-    g.setColour(processor.clipSamples()>0?red:blue);setFont(g,15,true);g.drawText(juce::String(latest.elapsedSeconds,1)+" s   |   "+juce::String((juce::int64)processor.clipSamples())+" clips",session+16,192,getWidth()-session-46,24,juce::Justification::centredLeft);
+    g.setColour(processor.clipSamples()>0?red:blue);setFont(g,15,true);g.drawText(juce::String(latest.elapsedSeconds,1)+" s   |   "+juce::String((juce::int64)processor.clipSamples())+" amostras clip",session+16,192,getWidth()-session-46,24,juce::Justification::centredLeft);
 }
 void TremDeMedirEditor::timerCallback() {
     const auto now=juce::Time::getMillisecondCounterHiRes();frameSeconds=lastFrameMs>0?juce::jlimit(.001f,.2f,(float)((now-lastFrameMs)/1000.)):1.f/24;lastFrameMs=now;

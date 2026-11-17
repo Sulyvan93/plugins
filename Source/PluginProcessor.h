@@ -48,6 +48,7 @@ private:
     std::array<std::atomic<float>,4096> rhythm{};
     std::atomic<uint64_t> rhythmPosition{0}, clips{0};
     std::atomic<float> bpm{0},bpmConfidence{0},hostTempo{0};
+    trem::TempoTracker tempoTracker;
     int rhythmSamples=0,rhythmHop=240; double rhythmEnergy=0;
     static juce::AudioProcessorValueTreeState::ParameterLayout makeParameters();
     void timerCallback() override;

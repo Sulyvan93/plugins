@@ -40,7 +40,7 @@ private:
     TremDeMedirProcessor& processor;
     GlassLookAndFeel glass;
     juce::ComboBox preset, gate, history, digitalMode, analogMode, weighting, rtaSource, lfe, logInterval, loudView;
-    juce::ComboBox loudUnits,bandCount,rtaMode,levelMode,holdTime,returnRate,rtaRange;
+    juce::ComboBox loudUnits,bandCount,rtaMode,levelMode,holdTime,returnRate,rtaRange,tempoOctave;
     juce::Slider target, ceiling, vuRef,tuneRef;
     juce::ToggleButton highQuality, alerts, logging,measurePause,peakHold,lrMax;
     juce::TextButton tap{"TAP"},resetPeaks{"RESET PEAK"};
